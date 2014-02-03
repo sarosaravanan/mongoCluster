@@ -33,4 +33,67 @@ mongod --shardsvr --replSet b --dbpath b2 --port 27005 --fork --logpath log/log.
 #===========================================================================================================================
 #start mongos process
 mongos --configdb pmone:26050,pmone:26051,pmone:26052 --fork --logpath log/log.mongos0
+#===========================================================================================================================
+#Connect to first shard (mongod) processes
+mongo --port 27000
+#===========================================================================================================================
+#Once connected, initiate replica set using below command
+rs.initiate({
+    "_id" : "a",
+    "version" : 1,
+    "members" : [
+                  {
+                     "_id" : 0,
+                     "host" : "pmone:27000",
+                     "priority" : 2
+                  },
+                  {
+                     "_id" : 1,
+                     "host" : "pmone:27001",
+                     "priority" : 1
+                  },
+                  {
+                     "_id" : 2,
+                     "host" : "pmone:27002",
+                     "priority" : 0.5
+                  }
+     ]
+});
 
+#===========================================================================================================================
+#Connect to second shard (mongod) processes
+mongo --port 27003
+#===========================================================================================================================
+#Once connected, initiate replica set using below command
+rs.initiate({
+    "_id" : "b",
+    "version" : 1,
+    "members" : [
+                  {
+                     "_id" : 0,
+                     "host" : "pmone:27003",
+                     "priority" : 2
+                  },
+                  {
+                     "_id" : 1,
+                     "host" : "pmone:27004",
+                     "priority" : 1
+                  },
+                  {
+                     "_id" : 2,
+                     "host" : "pmone:27005",
+                     "priority" : 0.5
+                  }
+     ]
+});
+#===========================================================================================================================
+#Connect to mongos process running on a default port
+mongo
+#===========================================================================================================================
+#Use below commands to add shards in the cluster
+sh.addShard("a/pmone:27000");
+sh.addShard("b/pmone:27003");
+#===========================================================================================================================
+#Enable sharding
+sh.enableSharding("location");
+sh.shardCollection("checkin",{location_type:1});
