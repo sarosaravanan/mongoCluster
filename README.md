@@ -1,2 +1,2 @@
-M102-MongoDB-for-DBAs
-=====================
+How to configure mongoDB with Replica Sets and Sharding 
+=======================================================
